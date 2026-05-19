@@ -19,7 +19,7 @@ Here is a list of the projects included in this repository:
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/Goodnews-code/udemy-javascript-projects.git
    cd JavaScript
    ```
 
