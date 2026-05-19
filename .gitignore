@@ -26,3 +26,9 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 *.log
+
+#folders to ignore
+Reusable code/
+Pre-maize-practise/
+movie003/
+node/

@@ -9,7 +9,7 @@ const unitLengthX = width / cellsHorizontal;
 const unitLengthY = height / cellsVertical;
 
 const engine = Engine.create();
-engine.world.gravity.y = 0;
+engine.gravity.y = 0;
 const { world } = engine;
 const render = Render.create({
   element: document.body,
@@ -24,12 +24,19 @@ Render.run(render);
 Runner.run(Runner.create(), engine);
 
 // Outer boundary walls (100px thick to prevent tunneling/disappearing)
-const walls = [
-  Bodies.rectangle(width / 2, -50, width, 100, { isStatic: true }),
-  Bodies.rectangle(width / 2, height + 50, width, 100, { isStatic: true }),
-  Bodies.rectangle(-50, height / 2, 100, height, { isStatic: true }),
-  Bodies.rectangle(width + 50, height / 2, 100, height, { isStatic: true }),
-];
+const wallTop = Bodies.rectangle(width / 2, -50, width, 100, {
+  isStatic: true,
+});
+const wallBottom = Bodies.rectangle(width / 2, height + 50, width, 100, {
+  isStatic: true,
+});
+const wallLeft = Bodies.rectangle(-50, height / 2, 100, height, {
+  isStatic: true,
+});
+const wallRight = Bodies.rectangle(width + 50, height / 2, 100, height, {
+  isStatic: true,
+});
+const walls = [wallTop, wallBottom, wallLeft, wallRight];
 World.add(world, walls);
 
 // Maze generation
@@ -127,10 +134,14 @@ horizontals.forEach((row, rowIndex) => {
       columnIndex * unitLengthX + unitLengthX / 2,
       rowIndex * unitLengthY + unitLengthY,
       unitLengthX,
-      10, // Thicker wall (10px) to prevent physics tunneling
+      10,
       {
         label: "wall",
-        isStatic: true,
+        isStatic: false,
+        density: 500,
+        collisionFilter: { group: -1 },
+        frictionAir: 0.02,
+        restitution: 0.3,
         render: {
           fillStyle: "red",
         },
@@ -149,11 +160,15 @@ verticals.forEach((row, rowIndex) => {
     const wall = Bodies.rectangle(
       columnIndex * unitLengthX + unitLengthX,
       rowIndex * unitLengthY + unitLengthY / 2,
-      10, // Thicker wall (10px) to prevent physics tunneling
+      10,
       unitLengthY,
       {
         label: "wall",
-        isStatic: true,
+        isStatic: false,
+        density: 500,
+        collisionFilter: { group: -1 },
+        frictionAir: 0.02,
+        restitution: 0.3,
         render: {
           fillStyle: "red",
         },
@@ -209,7 +224,27 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+// Freeze wall positions during gameplay so ball can't push them
+const wallPositions = new Map();
+world.bodies.forEach((body) => {
+  if (body.label === "wall") {
+    wallPositions.set(body, { x: body.position.x, y: body.position.y });
+  }
+});
+
+function freezeWalls() {
+  wallPositions.forEach((pos, body) => {
+    Body.setPosition(body, pos);
+    Body.setVelocity(body, { x: 0, y: 0 });
+    Body.setAngularVelocity(body, 0);
+  });
+}
+
+Events.on(engine, "beforeUpdate", freezeWalls);
+
 // Win Condition
+
+let gameWon = false;
 
 Events.on(engine, "collisionStart", (event) => {
   event.pairs.forEach((collision) => {
@@ -219,21 +254,27 @@ Events.on(engine, "collisionStart", (event) => {
       labels.includes(collision.bodyA.label) &&
       labels.includes(collision.bodyB.label)
     ) {
+      if (gameWon) return;
+      gameWon = true;
+
       document.querySelector(".winner").classList.remove("hidden");
 
-      // Defer modifications to after the update tick to prevent Matter.js crashes/ignored states
-      Events.on(engine, "afterUpdate", function triggerWin() {
-        Events.off(engine, "afterUpdate", triggerWin); // Unsubscribe immediately
+      // Stop freezing walls
+      Events.off(engine, "beforeUpdate", freezeWalls);
 
-        world.gravity.y = 1;
-        World.remove(world, walls);
-        Body.setStatic(ball, true); // Freeze the ball in place so it doesn't fall
-        
-        world.bodies.forEach((body) => {
-          if (body.label === "wall") {
-            Body.setStatic(body, false); // Make maze walls fall
-          }
-        });
+      // Turn on gravity — walls are already non-static, so they fall!
+      engine.gravity.y = 1;
+
+      // Give each wall a random kick for dramatic effect
+      world.bodies.forEach((body) => {
+        if (body.label === "wall") {
+          body.frictionAir = 0;
+          Body.setVelocity(body, {
+            x: (Math.random() - 0.5) * 8,
+            y: -(Math.random() * 5),
+          });
+          Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.5);
+        }
       });
     }
   });
