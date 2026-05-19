@@ -92,23 +92,29 @@ const runComparison = () => {
 };
 
 const movieTemplate = (movieDetail) => {
-  const dollars = parseInt(
-    movieDetail.BoxOffice.replace(/\$/g, "").replace(/,/g, ""),
-  );
-  const metascore = parseInt(movieDetail.Metascore);
-  const imdbRating = parseFloat(movieDetail.imdbRating);
-  const imdbVotes = parseInt(movieDetail.imdbVotes.replace(/,/g, ""));
+  const dollars = movieDetail.BoxOffice && movieDetail.BoxOffice !== "N/A"
+    ? parseInt(movieDetail.BoxOffice.replace(/\$/g, "").replace(/,/g, ""))
+    : 0;
+  const metascore = movieDetail.Metascore && movieDetail.Metascore !== "N/A"
+    ? parseInt(movieDetail.Metascore)
+    : 0;
+  const imdbRating = movieDetail.imdbRating && movieDetail.imdbRating !== "N/A"
+    ? parseFloat(movieDetail.imdbRating)
+    : 0;
+  const imdbVotes = movieDetail.imdbVotes && movieDetail.imdbVotes !== "N/A"
+    ? parseInt(movieDetail.imdbVotes.replace(/,/g, ""))
+    : 0;
 
-  let count = 0;
-  const awards = movieDetail.Awards.split(" ").reduce((prev, word) => {
-    const value = parseInt(word);
-
-    if (isNaN(value)) {
-      return prev;
-    } else {
-      return prev + value;
-    }
-  }, 0);
+  const awards = movieDetail.Awards && movieDetail.Awards !== "N/A"
+    ? movieDetail.Awards.split(" ").reduce((prev, word) => {
+        const value = parseInt(word);
+        if (isNaN(value)) {
+          return prev;
+        } else {
+          return prev + value;
+        }
+      }, 0)
+    : 0;
   console.log(awards);
 
   return `
