@@ -12,7 +12,14 @@ A custom CLI tool built with Node.js that functions similarly to `nodemon`. It u
 ## How to Run / Usage
 This acts as an executable command line node program.
 1. Navigate to the `watchit` directory.
-2. Ensure you have Node installed, and run `npm install` to download required dependencies (`caporal`, `chokidar`, `just-debounce-it`).
+2. Ensure you have Node.js installed, then install the dependencies:
+   ```bash
+   npm install
+   ```
 3. Create a test file, e.g., `test.js`, and add a console log.
-4. Execute `npx watchit test.js`. Alternatively, you can use `npm link` to run `watchit test.js` directly everywhere on your machine.
+4. Execute the watcher:
+   ```bash
+   npx watchit test.js
+   ```
+   *(Alternatively, use `npm link` to make it accessible globally.)*
 5. Watch the script auto-execute every time you save `test.js`.
