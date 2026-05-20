@@ -12,6 +12,12 @@ A Node.js-based, command-line clone of the `ls` utility. It demonstrates advance
 ## How to Run / Usage
 This acts as an executable command line node program.
 1. Navigate to the `list` directory.
-2. Run `npm install` to grab the required packages (specifically `chalk`).
-3. To test the list script here, you can run `node index.js`. 
-4. *Optional*: Use `npm link` based on the package setup to run `nls` anywhere in your terminal to see folder structures cleanly output.
+2. Install the required Node packages (specifically `chalk`):
+   ```bash
+   npm install
+   ```
+3. Run the list script locally:
+   ```bash
+   node index.js
+   ```
+4. *Optional*: Run `npm link` to make the `nls` command available globally in your terminal.
