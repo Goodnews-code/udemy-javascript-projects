@@ -23,21 +23,15 @@ fs.readdir(targetDir, async (err, filenames) => {
     return lstat(path.join(targetDir, filename));
   });
 
-  const results = await Promise.allSettled(statPromises);
+  const allStats = await Promise.all(statPromises);
 
-  for (let i = 0; i < results.length; i++) {
-    const res = results[i];
-    const name = filenames[i];
+  for (let stats of allStats) {
+    const index = allStats.indexOf(stats);
 
-    if (res.status === "fulfilled") {
-      const stats = res.value;
-      if (stats.isFile()) {
-        console.log(chalk.whiteBright(name));
-      } else {
-        console.log(chalk.blue.bold(name));
-      }
+    if (stats.isFile()) {
+      console.log(chalk.whiteBright(filenames[index]));
     } else {
-      console.log(chalk.red(`${name}: ${res.reason && res.reason.message ? res.reason.message : res.reason}`));
+      console.log(chalk.blue.bold(filenames[index]));
     }
   }
 });
